@@ -1,3 +1,5 @@
+package prelucrareaimaginilorlaborator;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -19,10 +21,12 @@ import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import java.lang.Math;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -54,6 +58,7 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.StandardXYBarPainter;
 import org.jfree.chart.renderer.xy.XYBarRenderer;
 import org.jfree.data.statistics.HistogramDataset;
+
 
 /**
  *
@@ -137,6 +142,17 @@ public class PrelucrareaImaginilorLaborator extends Application {
         
         MenuItem menuItem_Histograma=new MenuItem("Histograma");
 
+
+        Menu menuFiltre=new Menu("Filtre");
+
+        MenuItem menuItem_Accentuare=new Menu("Accentuare");
+        
+         MenuItem menuItem_Mediere=new MenuItem("Mediere");
+         
+         MenuItem menuItem_FiltruMedian=new MenuItem("Filtru Median");
+
+         
+
        
 
         SeparatorMenuItem sep = new SeparatorMenuItem();
@@ -160,13 +176,16 @@ public class PrelucrareaImaginilorLaborator extends Application {
         menuItem_Grayscale2.setDisable(true);
         menuItem_Grayscale4.setDisable(true);
         menuItem_Histograma.setDisable(true);
+        menuItem_Mediere.setDisable(true);
+        menuItem_FiltruMedian.setDisable(true);
+        menuItem_Accentuare.setDisable(true);
         
 
-        
+        menuFiltre.getItems().addAll(menuItem_Mediere,menuItem_FiltruMedian,menuItem_Accentuare);
 
         menuChange.getItems().addAll(menuItem_RGB,menuItemGrayScale,menuItemYUV,menuItemOriginal,menuItemBW,menuItemHSV,menuItem_Grayscale2,menuItem_Grayscale3,menuItem_Grayscale4,menuItem_Histograma);
 
-        menuBar.getMenus().addAll(menuFile, menuChange);
+        menuBar.getMenus().addAll(menuFile, menuChange,menuFiltre);
 
         VBox vbox = new VBox(menuBar);
         vbox.setAlignment(Pos.TOP_CENTER);
@@ -179,13 +198,8 @@ public class PrelucrareaImaginilorLaborator extends Application {
         menuItem_Open.setOnAction((ActionEvent event) -> {
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Afiseaza Imagine");
-//            menuItemGrayScale.setDisable(false);
-//            menuItemInvert.setDisable(false);
-//            menuItemYUV.setDisable(false);
-//            menuItemOriginal.setDisable(false);
-//            menuItemBW.setDisable(false);
-//            
 
+         
             
             File file = fileChooser.showOpenDialog(mainStage);
             if (file != null) {
@@ -226,6 +240,10 @@ public class PrelucrareaImaginilorLaborator extends Application {
                     
                     for(int i=0;i<menuBar.getMenus().get(1).getItems().size();i++){
                         menuBar.getMenus().get(1).getItems().get(i).setDisable(false);
+                    }
+
+                    for(int i=0;i<menuBar.getMenus().get(2).getItems().size();i++){
+                        menuBar.getMenus().get(2).getItems().get(i).setDisable(false);
                     }
                     
                 } catch (Exception ex) {
@@ -300,9 +318,167 @@ public class PrelucrareaImaginilorLaborator extends Application {
            secondStage.show();             
 
        }); 
+
+
+       menuItem_Accentuare.setOnAction((ActionEvent event)->{
+
+        ScrollPane spH=new ScrollPane();
+        BufferedImage imageH=this.accentuare(bufferedImag);
+
+        Image imgH = SwingFXUtils.toFXImage(imageH, null); 
+        ImageView imageViewH = new ImageView(); 
+        imageViewH.setFitHeight(400); 
+        imageViewH.setPreserveRatio(true); 
+         imageViewH.setImage(imgH); 
+
+         imageViewH.setFitHeight(400); 
+
+            imageViewH.setPreserveRatio(true); 
+
+
+            imageViewH.setSmooth(true); 
+
+            imageViewH.setCache(true); 
+     
+            VBox vbH = new VBox(); 
+             
+            vbH.getChildren().addAll(imageViewH); 
+
+            spH.setContent(vbH); 
+
+            Stage secondStage = new Stage(); 
+
+            Scene sceneH = new Scene(new HBox(), 400, 350); 
+
+            ((HBox)sceneH.getRoot()).getChildren().addAll(spH); 
+
+            secondStage.setTitle(name.getText()); 
+
+            secondStage.setScene(sceneH); 
+
+            secondStage.show();   
+        });
          
-          
+       
+       menuItem_FiltruMedian.setOnAction((ActionEvent event)->{
+         ScrollPane spH=new ScrollPane();
+         
+         BufferedImage imageH=Utility.median(bufferedImag, 4);
+                 
+                  
+            Slider sliderMedian = new Slider(0, 8, 4);//creare slider pt culoarea RED
+            sliderMedian.setShowTickLabels(true);
+            sliderMedian.setMajorTickUnit(1);
+            sliderMedian.setBlockIncrement(1);
+            Image imgH = SwingFXUtils.toFXImage(imageH, null); 
+            ImageView imageViewH = new ImageView(); 
+
+            imageViewH.setFitHeight(400); 
+
+            imageViewH.setPreserveRatio(true); 
+
+            imageViewH.setImage(imgH); 
             
+           sliderMedian.valueProperty().addListener(new ChangeListener<Number>() {
+        
+
+             @Override
+             public void changed(ObservableValue<? extends Number> observable, Number oldValue, Number newValue) {
+                 
+                 
+                 BufferedImage aux=Utility.median(bufferedImag, newValue.intValue());
+                 Image imgAUX = SwingFXUtils.toFXImage(aux, null);
+                 imageViewH.setImage(imgAUX);
+                 
+                //To change body of generated methods, choose Tools | Templates.
+             }
+        });
+            
+            
+ 
+            imageViewH.setFitHeight(400); 
+
+            imageViewH.setPreserveRatio(true); 
+
+
+            imageViewH.setSmooth(true); 
+
+            imageViewH.setCache(true); 
+     
+            VBox vbH = new VBox(); 
+             
+            vbH.getChildren().addAll(imageViewH,sliderMedian); 
+
+            spH.setContent(vbH); 
+
+            Stage secondStage = new Stage(); 
+
+            Scene sceneH = new Scene(new HBox(), 400, 350); 
+
+            ((HBox)sceneH.getRoot()).getChildren().addAll(spH); 
+
+ 
+
+            secondStage.setTitle(name.getText()); 
+
+            secondStage.setScene(sceneH); 
+
+            secondStage.show();   
+       
+       });
+        
+        menuItem_Mediere.setOnAction((ActionEvent event)->{
+        
+        ScrollPane spH = new ScrollPane();
+
+         BufferedImage imageH = this.mediere(bufferedImag); 
+ 
+            Image imgH = SwingFXUtils.toFXImage(imageH, null); 
+
+            ImageView imageViewH = new ImageView(); 
+
+            imageViewH.setFitHeight(400); 
+
+            imageViewH.setPreserveRatio(true); 
+
+            imageViewH.setImage(imgH); 
+
+            imageViewH.setSmooth(true); 
+
+            imageViewH.setCache(true); 
+
+            spH.setContent(imageViewH); 
+
+ 
+
+            VBox vbH = new VBox(); 
+
+             
+
+            vbH.getChildren().addAll(imageViewH); 
+
+            spH.setContent(vbH); 
+
+ 
+
+            Stage secondStage = new Stage(); 
+
+ 
+
+            Scene sceneH = new Scene(new HBox(), 400, 350); 
+
+            ((HBox)sceneH.getRoot()).getChildren().addAll(spH); 
+
+ 
+
+            secondStage.setTitle(name.getText()); 
+
+            secondStage.setScene(sceneH); 
+
+            secondStage.show();             
+        
+        
+        });
             
             
 
@@ -1330,6 +1506,7 @@ public class PrelucrareaImaginilorLaborator extends Application {
 
     } 
     
+    
     private ChartPanel createChartPanel(BufferedImage img) { 
 
         // dataset 
@@ -1440,5 +1617,166 @@ public class PrelucrareaImaginilorLaborator extends Application {
                 return gImg; 
 
             } 
+    
+   
+    
+    public BufferedImage mediere(BufferedImage src){ 
+
+        BufferedImage dst = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_RGB); 
+
+        int i,j; 
+
+        int k,l; 
+
+        int w,h; 
+
+         
+
+        double[][] v = new double[5][5]; 
+
+        //coeficientii mastii de filtrare  
+
+        v[0][0]=1.0/9.0; v[0][1]=1.0/9.0; v[0][2]=1.0/9.0; v[0][3]=1.0/9.0; v[0][4]=1.0/9.0;
+
+        v[1][0]=1.0/9.0; v[1][1]=1.0/9.0; v[1][2]=1.0/9.0; v[1][3]=1.0/9.0; v[1][4]=1.0/9.0;
+
+        v[2][0]=1.0/9.0; v[2][1]=1.0/9.0; v[2][2]=1.0/9.0; v[2][3]=1.0/9.0;  v[2][4]=1.0/9.0; 
+
+         
+
+        w=src.getWidth(); 
+
+        h=src.getHeight(); 
+
+         
+
+        for(i=2;i<w-2;i++){ 
+
+            for(j=2;j<h-2;j++){ 
+
+                //suma ponderata  
+
+                double sumr=0,sumg=0,sumb=0; 
+
+                for(k=-2;k<3;k++){ 
+
+                    for(l=-2;l<3;l++){ 
+
+                        int pixel = src.getRGB(i + k, j + l); 
+
+                        Color c = new Color(pixel, true); 
+
+                        sumr += v[k + 2][l + 2] * c.getRed(); 
+
+                        sumg += v[k + 2][l + 2] * c.getGreen(); 
+
+                        sumb += v[k + 2][l + 2] * c.getBlue(); 
+                        
+                        sumr=Utility.Coreacteaza(sumr);
+                        sumg=Utility.Coreacteaza(sumg);
+                        sumb=Utility.Coreacteaza(sumb);
+
+                        Color nc = new Color((int) sumr, (int) sumg, (int) sumb); 
+
+                        dst.setRGB(i, j, nc.getRGB()); 
+
+                    } 
+
+                } 
+
+            } 
+
+        } 
+
+        return dst;         
+
+    } 
+
+
+ public  BufferedImage accentuare(BufferedImage src) { 
+
+        BufferedImage dst = new BufferedImage(src.getWidth(), src.getHeight(), BufferedImage.TYPE_INT_RGB); 
+
+        int i,j; 
+
+        int k,l; 
+
+        int w,h; 
+
+        double sumr,sumg,sumb; 
+
+        double[][] v=new double[3][3]; 
+
+        //coeficientii mastii  
+
+        v[0][0]=0; v[0][1]=-1./4; v[0][2]=0; 
+
+        v[1][0]=-1./4; v[1][1]=1; v[1][2]=-1./4; 
+
+        v[2][0]=0; v[2][1]=-1./4; v[2][2]=0; 
+
+        w=src.getWidth(); 
+
+        h=src.getHeight(); 
+
+        for(i=1;i<w-1;i++){ 
+
+            for(j=1;j<h-1;j++){ 
+
+                sumr=0; 
+
+                sumg=0; 
+
+                sumb=0; 
+
+                for(k=-1;k<2;k++) { 
+
+                    for(l=-1;l<2;l++) { 
+
+                        int pixel = src.getRGB(i + k, j + l); 
+
+                        Color c = new Color(pixel, true); 
+
+                        sumr+=1.*v[k+1][l+1]*c.getRed(); 
+
+                        sumg+=1.*v[k+1][l+1]*c.getGreen(); 
+
+                        sumb+=1.*v[k+1][l+1]*c.getBlue(); 
+
+                        int nivr=c.getRed(); 
+
+                        //nivr=(int)(nivr+0.6*sumr); 
+
+                        int nivg=c.getGreen(); 
+
+                        //nivg=(int)(nivg+0.6*sumg); 
+
+                        int nivb=c.getBlue(); 
+
+                        //nivb=(int)(nivb+0.6*sumb); 
+
+                        Color nc = new Color((int) Utility.adjustColor(nivr, (int) (0.6*sumr)),  
+
+                                (int) Utility.adjustColor(nivg, (int) (0.6*sumg)),  
+
+                                (int) Utility.adjustColor(nivb, (int) (0.6*sumb))); 
+
+                        dst.setRGB(i, j, nc.getRGB());             
+
+                    } 
+
+                } 
+
+            } 
+
+        } 
+
+        return dst; 
+
+    } 
+
+     
+
+    
 
  }
